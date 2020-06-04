@@ -15,13 +15,26 @@ env:
 matrix:
   include:
     - name: gcc | openssl-stable
+    - arch: arm64
+      name: gcc | openssl-stable
     - name: clang | openssl-stable
+      compiler: clang
+    - arch: arm64
+      name: clang | openssl-stable
       compiler: clang
     - name: gcc | openssl-master
       env: OPENSSL_BRANCH=master
+    - arch: arm64
+      name: gcc | openssl-master
+      env: OPENSSL_BRANCH=master
+
     # Dynamic and static analysers
     - name: gcc+ASan | openssl-stable
       env: ASAN=-DASAN=1
+    - arch: arm64
+      name: gcc+ASan | openssl-stable
+      env: ASAN=-DASAN=1
+
     - name: gcc+Coverity | openssl-stable (cron)
       env: COVERITY_SCAN_PROJECT_NAME="gost-engine" COVERITY_SCAN_BRANCH_PATTERN="*" COVERITY_SCAN_NOTIFICATION_EMAIL="beldmit@gmail.com" COVERITY_SCAN_BUILD_COMMAND="make"
       if: type == cron
@@ -30,6 +43,16 @@ matrix:
         - cd build
         - cmake -DOPENSSL_ROOT_DIR=${PREFIX} -DOPENSSL_LIBRARIES=${PREFIX}/lib -DOPENSSL_ENGINES_DIR=${PREFIX}/engines ..
         - curl -s "https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh" | bash || true
+    - arch: arm64
+      name: gcc+Coverity | openssl-stable (cron)
+      env: COVERITY_SCAN_PROJECT_NAME="gost-engine" COVERITY_SCAN_BRANCH_PATTERN="*" COVERITY_SCAN_NOTIFICATION_EMAIL="beldmit@gmail.com" COVERITY_SCAN_BUILD_COMMAND="make"
+      if: type == cron
+      script:
+        - mkdir build
+        - cd build
+        - cmake -DOPENSSL_ROOT_DIR=${PREFIX} -DOPENSSL_LIBRARIES=${PREFIX}/lib -DOPENSSL_ENGINES_DIR=${PREFIX}/engines ..
+        - curl -s "https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh" | bash || true
+ 
     # Other arches
     - name: gcc | openssl-stable
       env: CFLAGS=-m32 LDFLAGS=-m32 SETARCH="setarch i386" APT_INSTALL=gcc-multilib
